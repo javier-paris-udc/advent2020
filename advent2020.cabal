@@ -28,3 +28,7 @@ executable day03
     import:           shared_properties
     build-depends:    array ^>=0.5
     main-is:          day03.hs
+
+executable day04
+    import:           shared_properties
+    main-is:          day04.hs
