@@ -23,3 +23,8 @@ executable day01
 executable day02
     import:           shared_properties
     main-is:          day02.hs
+
+executable day03
+    import:           shared_properties
+    build-depends:    array ^>=0.5
+    main-is:          day03.hs
