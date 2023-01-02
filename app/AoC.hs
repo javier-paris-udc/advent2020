@@ -1,6 +1,7 @@
 module AoC where
 
-import Text.Parsec        (char
+import Text.Parsec        ((<|>)
+                          ,char
                           ,many1
                           ,digit
                           ,option
@@ -18,7 +19,7 @@ import Data.Bifunctor (first)
 intP :: Parsec String a Int
 intP =
     do
-        sign <- option 1 (char '-' >> return (-1))
+        sign <- option 1 ((char '-' >> return (-1)) <|> (char '+' >> return 1))
         num  <- read <$> many1 digit
         return (num * sign)
 
