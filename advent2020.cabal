@@ -53,3 +53,10 @@ executable day08
                       mtl ^>=2.3,
                       monad-loops ^>=0.4
     main-is:          day08.hs
+
+executable day09
+    import:           shared_properties
+    build-depends:    containers ^>=0.6,
+                      monad-loops ^>=0.4,
+                      mtl ^>=2.3
+    main-is:          day09.hs
