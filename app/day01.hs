@@ -1,11 +1,11 @@
 module Main where
 
 
-import Text.Parsec.String (Parser)
-import Text.Parsec (digit, many1, option, char, parse, space, sepEndBy1)
-import System.Environment (getArgs)
+import AoC                 (applyInput, intP)
 import Control.Applicative (liftA2, liftA3)
-import Data.Foldable (find)
+import Data.Foldable       (find)
+import Text.Parsec         (sepEndBy1, spaces)
+import Text.Parsec.String  (Parser)
 
 
 solveP1 :: [Int] -> Int
@@ -22,31 +22,9 @@ solveP2 l =
         Nothing -> error "no solution"
 
 
-
-intP :: Parser Int
-intP =
-    do
-        sign <- option 1 (char '-' >> return (-1))
-        n    <- many1 digit
-        return (sign * read n)
-
-
 numListP :: Parser [Int]
-numListP = intP `sepEndBy1` space
+numListP = intP `sepEndBy1` spaces
 
 
 main :: IO ()
-main =
-    do
-        args <- getArgs
-        case args of
-            [inputFile] ->
-                do
-                    input <- readFile inputFile
-                    case parse numListP "" input of
-                        Left err -> print err
-                        Right nums ->
-                            do
-                                print (solveP1 nums)
-                                print (solveP2 nums)
-            _ -> putStrLn "Use: day1 input"
+main = applyInput numListP solveP1 solveP2
