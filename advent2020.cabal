@@ -36,3 +36,8 @@ executable day04
 executable day05
     import:           shared_properties
     main-is:          day05.hs
+
+executable day06
+    import:           shared_properties
+    build-depends:    unordered-containers ^>=0.2
+    main-is:          day06.hs
