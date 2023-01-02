@@ -46,3 +46,10 @@ executable day07
     import:           shared_properties
     build-depends:    unordered-containers ^>=0.2
     main-is:          day07.hs
+
+executable day08
+    import:           shared_properties
+    build-depends:    unordered-containers ^>=0.2,
+                      mtl ^>=2.3,
+                      monad-loops ^>=0.4
+    main-is:          day08.hs
