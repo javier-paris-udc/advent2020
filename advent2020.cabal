@@ -60,3 +60,7 @@ executable day09
                       monad-loops ^>=0.4,
                       mtl ^>=2.3
     main-is:          day09.hs
+
+executable day10
+    import:           shared_properties
+    main-is:          day10.hs
