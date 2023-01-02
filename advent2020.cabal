@@ -19,3 +19,7 @@ common shared_properties
 executable day01
     import:           shared_properties
     main-is:          day01.hs
+
+executable day02
+    import:           shared_properties
+    main-is:          day02.hs
