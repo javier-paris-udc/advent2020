@@ -74,3 +74,7 @@ executable day12
     import:           shared_properties
     build-depends:    bifunctors ^>=5.5
     main-is:          day12.hs
+
+executable day13
+    import:           shared_properties
+    main-is:          day13.hs
