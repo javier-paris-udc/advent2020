@@ -47,11 +47,8 @@ solveP2 :: Program -> Int
 solveP2 = solve doWrite
   where
     doWrite mem mask pos val =
-        (foldl' (flip $ Map.alter (const valForMap)) mem allPos, mask)
+        (foldl' (\m p -> Map.insert p val m) mem allPos, mask)
       where
-        valForMap
-            | val == 0  = Nothing
-            | otherwise = Just val
         allPos = foldl' genPositions [pos] $ zip [0 ..] mask
         genPositions positions (bit, maskbit) =
             case maskbit of
@@ -63,13 +60,8 @@ solveP2 = solve doWrite
 solveP1 :: Program -> Int
 solveP1 = solve doWrite
   where
-    doWrite mem mask pos val = (Map.alter (const $ newValForMap val mask) pos mem, mask)
-
-    newValForMap val mask
-        | newVal == 0 = Nothing
-        | otherwise   = Just newVal
-      where
-        newVal = applyMask mask [0 ..] val
+    doWrite mem mask pos val = (Map.insert pos (newVal val mask) mem, mask)
+    newVal val mask = applyMask mask [0 ..] val
 
     applyMask _ []         _ = undefined
     applyMask m (b : bits) v =
