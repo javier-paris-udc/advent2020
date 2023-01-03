@@ -69,3 +69,8 @@ executable day11
     import:           shared_properties
     build-depends:    unordered-containers ^>=0.2
     main-is:          day11.hs
+
+executable day12
+    import:           shared_properties
+    build-depends:    bifunctors ^>=5.5
+    main-is:          day12.hs
