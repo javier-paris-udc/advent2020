@@ -87,3 +87,11 @@ applyInput = flip applyInputS ()
 applyInputS :: (Show b, Show c) => Parsec String s a -> s -> (a -> b) -> (a -> c) -> IO ()
 applyInputS parser state solveP1 solveP2 =
     applyInputSWith parser state solveP1 solveP2 print print
+
+
+applyInput1 :: (Show b) => Parser a -> (a -> b) -> IO ()
+applyInput1 p f = do
+    s <- parseFromArg p ()
+    case s of
+        Left  err    -> putStrLn err
+        Right parsed -> print (f parsed)

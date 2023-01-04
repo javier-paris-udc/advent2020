@@ -100,3 +100,7 @@ executable day17
                       extra ^>=1.7,
                       hashable ^>=1.4
     main-is:          day17.hs
+
+executable day18
+    import:           shared_properties
+    main-is:          day18.hs
