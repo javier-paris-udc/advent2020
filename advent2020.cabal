@@ -93,3 +93,10 @@ executable day16
     import:           shared_properties
     build-depends:    unordered-containers ^>=0.2
     main-is:          day16.hs
+
+executable day17
+    import:           shared_properties
+    build-depends:    unordered-containers ^>=0.2,
+                      extra ^>=1.7,
+                      hashable ^>=1.4
+    main-is:          day17.hs
