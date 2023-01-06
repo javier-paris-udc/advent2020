@@ -109,3 +109,10 @@ executable day19
     import:           shared_properties
     build-depends:    unordered-containers ^>=0.2
     main-is:          day19.hs
+
+executable day20
+    import:           shared_properties
+    build-depends:    unordered-containers ^>=0.2,
+                      array ^>=0.5,
+                      bifunctors ^>=5.5
+    main-is:          day20.hs
