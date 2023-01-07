@@ -121,3 +121,8 @@ executable day21
     import:           shared_properties
     build-depends:    unordered-containers ^>=0.2
     main-is:          day21.hs
+
+executable day22
+    import:           shared_properties
+    build-depends:    containers ^>=0.6
+    main-is:          day22.hs
