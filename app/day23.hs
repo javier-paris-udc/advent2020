@@ -3,15 +3,15 @@
 module Main where
 
 
-import AoC (applyInput)
-import Text.Parsec.String (Parser)
-import Text.Parsec (many1, digit)
-import Data.List (singleton, unfoldr)
-import Control.Monad.State.Strict (State, get, put, execState)
-import Control.Monad (replicateM_)
-import Data.Function ((&))
-import Data.HashMap.Strict (HashMap, (!))
-import qualified Data.HashMap.Strict as Map
+import           AoC                        (applyInput)
+import           Control.Monad              (replicateM_)
+import           Control.Monad.State.Strict (State, get, put, execState)
+import           Data.Function              ((&))
+import           Data.HashMap.Strict        (HashMap, (!))
+import qualified Data.HashMap.Strict        as Map
+import           Data.List                  (singleton, unfoldr)
+import           Text.Parsec                (many1, digit)
+import           Text.Parsec.String         (Parser)
 
 
 type Cups = HashMap Int Int
