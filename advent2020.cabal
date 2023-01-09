@@ -137,3 +137,7 @@ executable day24
     import:           shared_properties
     build-depends:    unordered-containers ^>=0.2
     main-is:          day24.hs
+
+executable day25
+    import:           shared_properties
+    main-is:          day25.hs
