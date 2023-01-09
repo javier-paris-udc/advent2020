@@ -132,3 +132,8 @@ executable day23
     build-depends:    unordered-containers ^>=0.2,
                       mtl ^>=2.3
     main-is:          day23.hs
+
+executable day24
+    import:           shared_properties
+    build-depends:    unordered-containers ^>=0.2
+    main-is:          day24.hs
