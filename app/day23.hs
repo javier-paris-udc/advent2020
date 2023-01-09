@@ -5,22 +5,25 @@ module Main where
 import AoC (applyInput)
 import Text.Parsec.String (Parser)
 import Text.Parsec (many1, digit)
-import Data.List (singleton, foldl')
+import Data.List (singleton)
 import qualified Data.Sequence as Seq
-import Data.Sequence (Seq, index, deleteAt)
+import Data.Sequence (Seq (..), index, deleteAt)
 import Control.Monad.State.Strict (State, get, put, execState)
 import Data.Maybe (fromJust)
 import Debug.Trace (trace)
 import Control.Monad (replicateM_)
 import Data.Function ((&))
 import Data.Foldable (toList)
-
+import Data.IntSet (IntSet)
+import qualified Data.IntSet as Set
+import Data.Bifunctor (first)
 
 
 data CupSt = CupSt {cups    :: Seq Int,
                     current :: Int,
                     maxCup  :: Int,
-                    minCup  :: Int}
+                    minCup  :: Int,
+                    idx     :: Seq IntSet}
                    deriving (Show, Eq)
 
 
@@ -32,14 +35,58 @@ nextIdx :: Int -> Seq Int -> Int
 nextIdx n cups = fromJust $ Seq.findIndexL (== next cups n) cups
 
 
+createIdx :: Seq Int -> Seq IntSet
+createIdx = fmap (Set.fromList . toList) . Seq.chunksOf 10000
+
+removeIdx :: Int -> Int -> Seq IntSet -> Seq IntSet
+removeIdx x xIx idx =
+    case idx of
+        Empty                   -> Empty
+        s :<| sets
+            | Set.size s > xIx
+           && Set.size s > 5000 -> Set.delete x s :<| sets
+            | Set.size s > xIx  -> case sets of
+                                    s2 :<| s2Sets -> {-# SCC "fuseSets" #-} Set.delete x s `Set.union` s2 :<| s2Sets
+                                    Empty         -> Set.delete x s :<| Empty
+            | otherwise         -> s :<| removeIdx x (xIx - Set.size s) sets
+
+
+splitSet :: Int -> Seq Int -> Int -> Seq IntSet
+splitSet start cup elements =
+    fmap (Set.fromList . toList) seqs
+  where
+    seqs  = Seq.chunksOf 10000 $ Seq.take elements $ Seq.drop start cup
+
+
+storeIdx :: Seq Int -> [Int] -> Int -> Seq IntSet -> Seq IntSet
+storeIdx cup xs xsIx idx = aux 0 xs xsIx idx
+  where
+   aux n xs xsIx idx =
+    case idx of
+        Empty                   -> Seq.singleton $ Set.fromList xs
+        s :<| sets
+            | Set.size s > xsIx -> let newS = foldr Set.insert s xs
+                                   in if Set.size newS > 15000
+                                      then splitSet n cup (Set.size newS) Seq.>< sets
+                                      else newS:<| sets
+            | otherwise         -> s :<| aux (n+Set.size s) xs (xsIx - Set.size s) sets
+
+
 pick :: Int -> State CupSt [Int]
 pick n
     | n == 0    = return []
     | otherwise = do
         CupSt { .. } <- get
-        currentIx   <- getNIdx current
-        let x = cups `index` next cups currentIx
-        put $ CupSt { cups = deleteAt (next cups currentIx) cups, ..}
+        let nextIx = next cups current
+            x = cups `index` nextIx
+        if nextIx > current
+            then put $ CupSt { cups    = deleteAt nextIx cups
+                             , idx     = removeIdx x nextIx idx
+                             , ..}
+            else put $ CupSt { cups    = deleteAt nextIx cups
+                             , current = current - 1
+                             , idx     = removeIdx x nextIx idx
+                             , ..}
         rest <- pick (n-1)
         return (x : rest)
 
@@ -47,16 +94,33 @@ pick n
 getNIdx :: Int -> State CupSt Int
 getNIdx n = do
     CupSt { .. } <- get
-    return $ fromJust $ Seq.findIndexL (== n) cups
+    let start = getStartIndex n 0 idx
+    let ix = fromJust $ Seq.findIndexL (== n) (Seq.drop start cups)
+    return $ start + ix
+
+
+getStartIndex n i idx =
+        case idx of
+            Empty                  -> undefined
+            s :<| sets
+                | n `Set.member` s -> i
+                | otherwise        -> getStartIndex n (i + Set.size s) sets
 
 
 store :: [Int] -> State CupSt ()
 store cps = do
     CupSt { .. } <- get
-    let nextN    =  adjustN cps minCup maxCup (current - 1)
+    let nextN    =  adjustN cps minCup maxCup (cups `index` current - 1)
     nextNIdx     <- getNIdx nextN
-    let newCups = foldl' (\cp x -> Seq.insertAt (nextNIdx + 1) x cp) cups (reverse cps)
-    put CupSt {cups = newCups, ..}
+    let newCups = foldr (Seq.insertAt (nextNIdx + 1)) cups cps
+        newIdx  = storeIdx newCups cps (nextNIdx + 1) idx
+    if nextNIdx < current then put CupSt {cups    = newCups
+                                         ,current = current + 3
+                                         ,idx     = newIdx
+                                         ,..}
+                          else put CupSt {cups = newCups
+                                         ,idx  = newIdx
+                                         ,..}
   where
     adjustN l minCup maxCup n
         | n < minCup                = adjustN l minCup maxCup maxCup
@@ -68,8 +132,7 @@ store cps = do
 advanceCurrent :: State CupSt ()
 advanceCurrent = do
     CupSt { .. } <- get
-    currentIx <- getNIdx current
-    put CupSt {current = cups `index` next cups currentIx, .. }
+    put CupSt {current = (current + 1) `mod` Seq.length cups, .. }
 
 
 move :: State CupSt ()
@@ -86,17 +149,21 @@ seqFrom n cups =
      & map (\ix ->  cups `index` (ix `mod` Seq.length cups))
 
 
-solveP2 :: Seq Int -> [Int]
+solveP2 :: Seq Int -> Int
 solveP2 cupSeq = state0
-               & execState (replicateM_ 1 move)
+               & execState (replicateM_ 1_000_000 move)
                & cups
                & seqFrom 1
-               & take 3
+               & drop 1
+               & take 2
+               & product
   where
-    state0 = CupSt {cups    = Seq.fromList $ toList cupSeq ++ [10..1_000_000]
-                   ,current = cupSeq `index` 0
-                   ,maxCup  = 1_000_000
-                   ,minCup  = 1}
+    allCups = Seq.fromList $ toList cupSeq ++ [10..1_000_000]
+    state0  = CupSt {cups    = allCups
+                    ,current = 0
+                    ,maxCup  = 1_000_000
+                    ,minCup  = 1
+                    ,idx     = createIdx allCups}
 
 
 solveP1 :: Seq Int -> [Int]
@@ -107,9 +174,10 @@ solveP1 cupSeq = state0
                & drop 1
   where
     state0 = CupSt {cups    = cupSeq
-                   ,current = cupSeq `index` 0
-                   ,maxCup  = maximum cupSeq
-                   ,minCup  = minimum cupSeq}
+                   ,current = 0
+                   ,maxCup  = 9
+                   ,minCup  = 1
+                   ,idx     = createIdx cupSeq}
 
 
 cupP :: Parser (Seq Int)
